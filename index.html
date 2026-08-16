@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Stacks</title>
+<meta name="theme-color" content="#17171a" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="wrap">
+  <header class="app-header">
+    <h1 class="app-title">Stacks<span class="dot">.</span></h1>
+    <div class="app-sub" id="subline">your queue, off the algorithm</div>
+    <div class="search-row">
+      <input class="search-input" id="search" type="text" placeholder="Search saved titles or channels…" />
+    </div>
+    <div class="chip-row" id="catChips"></div>
+    <div class="chip-row" id="plChips"></div>
+  </header>
+
+  <input type="file" id="importFile" accept="application/json" style="display:none;" />
+
+  <div class="count-line" id="countLine">0 saved</div>
+  <div class="list" id="list"></div>
+
+  <div class="backup-row">
+    <button class="text-btn" id="exportBtn">Export backup</button>
+    <span>·</span>
+    <button class="text-btn" id="importBtn">Import backup</button>
+  </div>
+</div>
+
+<button class="fab" id="fabAdd" aria-label="Add link">+</button>
+
+<div class="sheet-backdrop" id="sheetBackdrop">
+  <div class="sheet">
+    <h3 id="sheetTitle">Add a link</h3>
+    <div class="field">
+      <label for="fUrl">YouTube link</label>
+      <input type="url" id="fUrl" placeholder="https://youtube.com/watch?v=…" />
+    </div>
+    <div class="field">
+      <label for="fTitleField">Title</label>
+      <input type="text" id="fTitleField" placeholder="Fetched automatically, or type your own" />
+    </div>
+    <div class="field">
+      <label>Category</label>
+      <div class="tag-picker" id="catPicker"></div>
+    </div>
+    <div class="field">
+      <label>Playlists</label>
+      <div class="tag-picker" id="plPicker"></div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="cancelBtn">Cancel</button>
+      <button class="btn primary" id="saveBtn">Save</button>
+    </div>
+    <div class="sheet-actions" id="deleteRow" style="display:none;">
+      <button class="btn danger" id="deleteBtn">Delete this link</button>
+    </div>
+  </div>
+</div>
+
+<script src="core.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

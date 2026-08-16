@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Save to Stacks</title>
+<meta name="theme-color" content="#17171a" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body class="share-page">
+<div class="wrap">
+  <header class="app-header" style="position:static;">
+    <h1 class="app-title" style="font-size:26px;">Save to Stacks<span class="dot">.</span></h1>
+  </header>
+
+  <div id="loadingRow" class="loading-row">
+    <span class="spinner"></span> reading the link…
+  </div>
+
+  <div id="formArea" style="display:none;">
+    <div class="preview-card">
+      <img class="stub-thumb" id="pvThumb" src="" alt="" />
+      <div class="stub-body">
+        <p class="stub-title" id="pvTitle"></p>
+        <div class="stub-channel" id="pvChannel"></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="fTitleField">Title</label>
+      <input type="text" id="fTitleField" />
+    </div>
+    <div class="field">
+      <label>Category</label>
+      <div class="tag-picker" id="catPicker"></div>
+    </div>
+    <div class="field">
+      <label>Playlists</label>
+      <div class="tag-picker" id="plPicker"></div>
+    </div>
+    <div class="sheet-actions">
+      <a class="btn ghost" href="index.html" style="text-align:center; text-decoration:none;">Skip</a>
+      <button class="btn primary" id="saveBtn">Save to shelf</button>
+    </div>
+  </div>
+
+  <div id="badLink" style="display:none;">
+    <p style="color:var(--ink-dim); font-size:14px; line-height:1.5;">
+      That didn't look like a YouTube link. Open Stacks and add it manually instead.
+    </p>
+    <a class="btn primary" href="index.html" style="display:block; text-align:center; text-decoration:none; margin-top:10px;">Open Stacks</a>
+  </div>
+</div>
+
+<script src="core.js"></script>
+<script src="share.js"></script>
+</body>
+</html>
