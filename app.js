@@ -6,6 +6,9 @@ let searchTerm = "";
 let editingId = null;
 let pickedCategory = null;
 let pickedPlaylists = new Set();
+let pickedPinned = false;
+let sortMode = "newest"; // newest | oldest | title
+const SORT_LABELS = { newest: "Newest ▾", oldest: "Oldest ▾", title: "Title A–Z ▾" };
 
 const $ = sel => document.querySelector(sel);
 const listEl = $("#list");
@@ -50,7 +53,19 @@ function render() {
     return true;
   });
 
+  if (sortMode === "oldest") {
+    filtered = filtered.slice().sort((a, b) => new Date(a.addedAt) - new Date(b.addedAt));
+  } else if (sortMode === "title") {
+    filtered = filtered.slice().sort((a, b) => a.title.localeCompare(b.title));
+  } else {
+    filtered = filtered.slice().sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt));
+  }
+
+  // Pinned links always bubble to the top, keeping the chosen sort within each group.
+  filtered = [...filtered.filter(l => l.pinned), ...filtered.filter(l => !l.pinned)];
+
   countLine.textContent = `${filtered.length} saved`;
+  $("#sortBtn").textContent = SORT_LABELS[sortMode];
 
   if (filtered.length === 0) {
     listEl.innerHTML = "";
@@ -72,9 +87,10 @@ function render() {
 
 function renderStub(link) {
   const el = document.createElement("div");
-  el.className = "stub" + (link.watched ? " watched" : "");
+  el.className = "stub" + (link.watched ? " watched" : "") + (link.pinned ? " pinned" : "");
   el.innerHTML = `
-    <img class="stub-thumb" src="${escapeHtml(link.thumbnail || '')}" alt="" loading="lazy" />
+    ${link.pinned ? '<div class="pin-badge">★</div>' : ""}
+    <img class="stub-thumb" src="${escapeHtml(link.thumbnail || '')}" alt="" loading="lazy" onerror="this.classList.add('broken')" />
     <div class="stub-body">
       <p class="stub-title">${escapeHtml(link.title)}</p>
       <div class="stub-channel">${escapeHtml(link.channel || "")}</div>
@@ -103,7 +119,23 @@ function renderStub(link) {
     e.stopPropagation();
     openSheet(link);
   };
-  el.onclick = () => window.open(link.url, "_blank", "noopener");
+
+  // Single tap opens the video; a second tap within the window toggles pin
+  // instead, so double-tap never also opens a link.
+  let tapTimer = null;
+  el.onclick = () => {
+    if (tapTimer) {
+      clearTimeout(tapTimer);
+      tapTimer = null;
+      Store.updateLink(link.id, { pinned: !link.pinned });
+      render();
+    } else {
+      tapTimer = setTimeout(() => {
+        tapTimer = null;
+        window.open(link.url, "_blank", "noopener");
+      }, 280);
+    }
+  };
   return el;
 }
 
@@ -113,18 +145,25 @@ function openSheet(link) {
   editingId = link ? link.id : null;
   pickedCategory = link ? link.category : null;
   pickedPlaylists = new Set(link ? (link.playlists || []) : []);
+  pickedPinned = link ? !!link.pinned : false;
 
   $("#sheetTitle").textContent = link ? "Edit link" : "Add a link";
   $("#fUrl").value = link ? link.url : "";
   $("#fUrl").disabled = !!link;
   $("#fTitleField").value = link ? link.title : "";
   $("#deleteRow").style.display = link ? "flex" : "none";
+  $("#pinToggle").classList.toggle("selected", pickedPinned);
 
   renderCategoryPicker();
   renderMultiPicker();
 
   sheetBackdrop.classList.add("open");
 }
+
+$("#pinToggle").onclick = () => {
+  pickedPinned = !pickedPinned;
+  $("#pinToggle").classList.toggle("selected", pickedPinned);
+};
 
 function renderCategoryPicker() {
   const container = $("#catPicker");
@@ -223,21 +262,34 @@ $("#saveBtn").onclick = () => {
     Store.updateLink(editingId, {
       title,
       category: pickedCategory,
-      playlists: Array.from(pickedPlaylists)
+      playlists: Array.from(pickedPlaylists),
+      pinned: pickedPinned
     });
   } else {
-    Store.addLink({
-      id: Date.now() + "-" + Math.random().toString(36).slice(2, 8),
-      url: YT.canonicalUrl(videoId),
-      videoId,
-      title,
-      channel: "",
-      thumbnail: YT.thumbUrl(videoId),
-      category: pickedCategory,
-      playlists: Array.from(pickedPlaylists),
-      watched: false,
-      addedAt: new Date().toISOString()
-    });
+    const dupe = Store.findByVideoId(videoId);
+    if (dupe) {
+      const mergedPlaylists = Array.from(new Set([...(dupe.playlists || []), ...pickedPlaylists]));
+      Store.updateLink(dupe.id, {
+        category: pickedCategory || dupe.category,
+        playlists: mergedPlaylists,
+        pinned: pickedPinned || dupe.pinned
+      });
+      alert("Already on your shelf — updated its category/playlists instead of adding a duplicate.");
+    } else {
+      Store.addLink({
+        id: Date.now() + "-" + Math.random().toString(36).slice(2, 8),
+        url: YT.canonicalUrl(videoId),
+        videoId,
+        title,
+        channel: "",
+        thumbnail: YT.thumbUrl(videoId),
+        category: pickedCategory,
+        playlists: Array.from(pickedPlaylists),
+        watched: false,
+        pinned: pickedPinned,
+        addedAt: new Date().toISOString()
+      });
+    }
   }
   closeSheet();
   render();
@@ -255,6 +307,83 @@ $("#search").addEventListener("input", (e) => {
   searchTerm = e.target.value;
   render();
 });
+
+$("#sortBtn").onclick = () => {
+  sortMode = sortMode === "newest" ? "oldest" : sortMode === "oldest" ? "title" : "newest";
+  render();
+};
+
+/* ---------- Manage categories & playlists ---------- */
+
+const manageBackdrop = $("#manageBackdrop");
+
+function renderManageSheet() {
+  const catList = $("#manageCats");
+  const plList = $("#managePls");
+
+  const cats = Store.getCategories();
+  catList.innerHTML = cats.length ? "" : `<div class="manage-empty">No categories yet.</div>`;
+  cats.forEach(name => {
+    const row = document.createElement("div");
+    row.className = "manage-item";
+    row.innerHTML = `<span class="name">${escapeHtml(name)}</span>
+      <button class="rename">Rename</button>
+      <button class="del">Delete</button>`;
+    row.querySelector(".rename").onclick = () => {
+      const next = prompt("Rename category:", name);
+      if (next && next.trim() && next.trim() !== name) {
+        Store.renameCategory(name, next.trim());
+        if (activeCategory === name) activeCategory = next.trim();
+        renderManageSheet();
+        render();
+      }
+    };
+    row.querySelector(".del").onclick = () => {
+      if (confirm(`Delete category "${name}"? Links keep their titles and playlists — they just lose this category.`)) {
+        Store.deleteCategory(name);
+        if (activeCategory === name) activeCategory = "All";
+        renderManageSheet();
+        render();
+      }
+    };
+    catList.appendChild(row);
+  });
+
+  const pls = Store.getPlaylists();
+  plList.innerHTML = pls.length ? "" : `<div class="manage-empty">No playlists yet.</div>`;
+  pls.forEach(name => {
+    const row = document.createElement("div");
+    row.className = "manage-item";
+    row.innerHTML = `<span class="name">${escapeHtml(name)}</span>
+      <button class="rename">Rename</button>
+      <button class="del">Delete</button>`;
+    row.querySelector(".rename").onclick = () => {
+      const next = prompt("Rename playlist:", name);
+      if (next && next.trim() && next.trim() !== name) {
+        Store.renamePlaylist(name, next.trim());
+        if (activePlaylist === name) activePlaylist = next.trim();
+        renderManageSheet();
+        render();
+      }
+    };
+    row.querySelector(".del").onclick = () => {
+      if (confirm(`Delete playlist "${name}"? Links stay, they just come out of this playlist.`)) {
+        Store.deletePlaylist(name);
+        if (activePlaylist === name) activePlaylist = null;
+        renderManageSheet();
+        render();
+      }
+    };
+    plList.appendChild(row);
+  });
+}
+
+$("#manageTagsBtn").onclick = () => {
+  renderManageSheet();
+  manageBackdrop.classList.add("open");
+};
+$("#manageCloseBtn").onclick = () => manageBackdrop.classList.remove("open");
+manageBackdrop.onclick = (e) => { if (e.target === manageBackdrop) manageBackdrop.classList.remove("open"); };
 
 /* ---------- Backup / restore ---------- */
 

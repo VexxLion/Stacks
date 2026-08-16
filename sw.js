@@ -1,4 +1,4 @@
-const CACHE = "stacks-v1";
+const CACHE = "stacks-v3";
 const SHELL = [
   "index.html",
   "share-target.html",

@@ -22,11 +22,17 @@
     </div>
     <div class="chip-row" id="catChips"></div>
     <div class="chip-row" id="plChips"></div>
+    <div class="manage-row">
+      <button class="text-btn" id="manageTagsBtn">✎ Manage categories &amp; playlists</button>
+    </div>
   </header>
 
   <input type="file" id="importFile" accept="application/json" style="display:none;" />
 
-  <div class="count-line" id="countLine">0 saved</div>
+  <div class="count-line-row">
+    <div class="count-line" id="countLine">0 saved</div>
+    <button class="text-btn" id="sortBtn">Newest ▾</button>
+  </div>
   <div class="list" id="list"></div>
 
   <div class="backup-row">
@@ -57,12 +63,35 @@
       <label>Playlists</label>
       <div class="tag-picker" id="plPicker"></div>
     </div>
+    <div class="field">
+      <label>Priority</label>
+      <div class="tag-picker">
+        <button type="button" class="tag-option" id="pinToggle">★ Pin to top</button>
+      </div>
+    </div>
     <div class="sheet-actions">
       <button class="btn ghost" id="cancelBtn">Cancel</button>
       <button class="btn primary" id="saveBtn">Save</button>
     </div>
     <div class="sheet-actions" id="deleteRow" style="display:none;">
       <button class="btn danger" id="deleteBtn">Delete this link</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet-backdrop" id="manageBackdrop">
+  <div class="sheet">
+    <h3>Manage tags</h3>
+    <div class="field">
+      <label>Categories</label>
+      <div class="manage-list" id="manageCats"></div>
+    </div>
+    <div class="field">
+      <label>Playlists</label>
+      <div class="manage-list" id="managePls"></div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn primary" id="manageCloseBtn">Done</button>
     </div>
   </div>
 </div>

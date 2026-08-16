@@ -101,18 +101,27 @@ async function init() {
 
 $("#saveBtn") && ($("#saveBtn").onclick = () => {
   const title = $("#fTitleField").value.trim() || "Untitled video";
-  Store.addLink({
-    id: Date.now() + "-" + Math.random().toString(36).slice(2, 8),
-    url: currentUrl,
-    videoId: currentVideoId,
-    title,
-    channel: $("#pvChannel").textContent || "",
-    thumbnail: YT.thumbUrl(currentVideoId),
-    category: pickedCategory,
-    playlists: Array.from(pickedPlaylists),
-    watched: false,
-    addedAt: new Date().toISOString()
-  });
+  const dupe = Store.findByVideoId(currentVideoId);
+  if (dupe) {
+    const mergedPlaylists = Array.from(new Set([...(dupe.playlists || []), ...pickedPlaylists]));
+    Store.updateLink(dupe.id, {
+      category: pickedCategory || dupe.category,
+      playlists: mergedPlaylists
+    });
+  } else {
+    Store.addLink({
+      id: Date.now() + "-" + Math.random().toString(36).slice(2, 8),
+      url: currentUrl,
+      videoId: currentVideoId,
+      title,
+      channel: $("#pvChannel").textContent || "",
+      thumbnail: YT.thumbUrl(currentVideoId),
+      category: pickedCategory,
+      playlists: Array.from(pickedPlaylists),
+      watched: false,
+      addedAt: new Date().toISOString()
+    });
+  }
   window.location.href = "index.html";
 });
 

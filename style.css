@@ -147,13 +147,68 @@ button { font-family: inherit; }
 }
 
 /* ---------- List ---------- */
+.count-line-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 18px 2px 10px;
+}
+
 .count-line {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--ink-faint);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  margin: 18px 2px 10px;
+}
+
+.manage-row {
+  margin-top: 10px;
+}
+
+.manage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.manage-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.manage-item .name {
+  flex: 1;
+  font-size: 14px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.manage-item button {
+  background: none;
+  border: none;
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  padding: 5px 7px;
+}
+.manage-item button:hover { color: var(--accent); }
+.manage-item button.del:hover { color: var(--brick); }
+
+.manage-empty {
+  color: var(--ink-faint);
+  font-size: 13px;
+  font-family: var(--font-mono);
 }
 
 .list {
@@ -179,6 +234,28 @@ button { font-family: inherit; }
 .stub.watched { opacity: 0.55; }
 .stub.watched .stub-title { text-decoration: line-through; text-decoration-color: #c1543c88; }
 
+.stub.pinned {
+  box-shadow: 0 0 0 1.5px var(--accent), var(--shadow);
+}
+
+.pin-badge {
+  position: absolute;
+  top: -9px;
+  left: -9px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  transform: rotate(-10deg);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
 @keyframes rise {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: none; }
@@ -189,10 +266,11 @@ button { font-family: inherit; }
   width: 108px;
   height: 76px;
   border-radius: 8px;
-  background: #d8d0b6 url('data:image/svg+xml;utf8,') center/cover;
+  background: #d8d0b6;
   object-fit: cover;
   border: 1px solid rgba(0,0,0,0.08);
 }
+.stub-thumb.broken { opacity: 0; }
 
 .stub-body {
   flex: 1;

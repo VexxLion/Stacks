@@ -57,6 +57,43 @@ const Store = {
       list.push(name);
       localStorage.setItem(DB_PLAYLISTS, JSON.stringify(list));
     }
+  },
+  renameCategory(oldName, newName) {
+    if (!oldName || !newName || oldName === newName) return;
+    const links = Store.getLinks();
+    links.forEach(l => { if (l.category === oldName) l.category = newName; });
+    Store.saveLinks(links);
+    const cats = Store.getCategories().filter(c => c !== oldName);
+    if (!cats.includes(newName)) cats.push(newName);
+    localStorage.setItem(DB_CATEGORIES, JSON.stringify(cats));
+  },
+  deleteCategory(name) {
+    const links = Store.getLinks();
+    links.forEach(l => { if (l.category === name) l.category = null; });
+    Store.saveLinks(links);
+    localStorage.setItem(DB_CATEGORIES, JSON.stringify(Store.getCategories().filter(c => c !== name)));
+  },
+  renamePlaylist(oldName, newName) {
+    if (!oldName || !newName || oldName === newName) return;
+    const links = Store.getLinks();
+    links.forEach(l => {
+      if (l.playlists && l.playlists.includes(oldName)) {
+        l.playlists = [...new Set(l.playlists.map(p => p === oldName ? newName : p))];
+      }
+    });
+    Store.saveLinks(links);
+    const pls = Store.getPlaylists().filter(p => p !== oldName);
+    if (!pls.includes(newName)) pls.push(newName);
+    localStorage.setItem(DB_PLAYLISTS, JSON.stringify(pls));
+  },
+  deletePlaylist(name) {
+    const links = Store.getLinks();
+    links.forEach(l => { if (l.playlists) l.playlists = l.playlists.filter(p => p !== name); });
+    Store.saveLinks(links);
+    localStorage.setItem(DB_PLAYLISTS, JSON.stringify(Store.getPlaylists().filter(p => p !== name)));
+  },
+  findByVideoId(videoId) {
+    return Store.getLinks().find(l => l.videoId === videoId) || null;
   }
 };
 
