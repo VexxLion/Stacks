@@ -4,6 +4,9 @@
 const DB_LINKS = "stacks:links";
 const DB_CATEGORIES = "stacks:categories";
 const DB_PLAYLISTS = "stacks:playlists";
+const DB_THEME = "stacks:theme";
+
+const ARCHIVE_AFTER_DAYS = 14;
 
 const Store = {
   getLinks() {
@@ -31,8 +34,23 @@ const Store = {
     (patch.playlists || []).forEach(Store.addPlaylist);
     return links[i];
   },
+  setWatched(id, watched) {
+    return Store.updateLink(id, {
+      watched,
+      watchedAt: watched ? new Date().toISOString() : null
+    });
+  },
   deleteLink(id) {
     Store.saveLinks(Store.getLinks().filter(l => l.id !== id));
+  },
+  deleteLinks(ids) {
+    const idSet = new Set(ids);
+    Store.saveLinks(Store.getLinks().filter(l => !idSet.has(l.id)));
+  },
+  isArchived(link) {
+    if (!link.watched || !link.watchedAt) return false;
+    const days = (Date.now() - new Date(link.watchedAt).getTime()) / 86400000;
+    return days > ARCHIVE_AFTER_DAYS;
   },
   getCategories() {
     try { return JSON.parse(localStorage.getItem(DB_CATEGORIES)) || []; }
@@ -80,6 +98,10 @@ const Store = {
       if (l.playlists && l.playlists.includes(oldName)) {
         l.playlists = [...new Set(l.playlists.map(p => p === oldName ? newName : p))];
       }
+      if (l.playlistOrder && oldName in l.playlistOrder) {
+        l.playlistOrder[newName] = l.playlistOrder[oldName];
+        delete l.playlistOrder[oldName];
+      }
     });
     Store.saveLinks(links);
     const pls = Store.getPlaylists().filter(p => p !== oldName);
@@ -88,12 +110,32 @@ const Store = {
   },
   deletePlaylist(name) {
     const links = Store.getLinks();
-    links.forEach(l => { if (l.playlists) l.playlists = l.playlists.filter(p => p !== name); });
+    links.forEach(l => {
+      if (l.playlists) l.playlists = l.playlists.filter(p => p !== name);
+      if (l.playlistOrder) delete l.playlistOrder[name];
+    });
     Store.saveLinks(links);
     localStorage.setItem(DB_PLAYLISTS, JSON.stringify(Store.getPlaylists().filter(p => p !== name)));
   },
   findByVideoId(videoId) {
     return Store.getLinks().find(l => l.videoId === videoId) || null;
+  },
+  // Persist a manual drag order for links within one playlist.
+  reorderWithinPlaylist(playlistName, orderedIds) {
+    const links = Store.getLinks();
+    orderedIds.forEach((id, index) => {
+      const link = links.find(l => l.id === id);
+      if (!link) return;
+      link.playlistOrder = link.playlistOrder || {};
+      link.playlistOrder[playlistName] = index;
+    });
+    Store.saveLinks(links);
+  },
+  playlistOrderOf(link, playlistName) {
+    if (link.playlistOrder && playlistName in link.playlistOrder) {
+      return link.playlistOrder[playlistName];
+    }
+    return Infinity;
   }
 };
 
@@ -151,6 +193,23 @@ function escapeHtml(str) {
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
   }[c]));
 }
+
+/* ---------- Theme ---------- */
+const Theme = {
+  get() {
+    return localStorage.getItem(DB_THEME) || "dark";
+  },
+  apply(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+  },
+  toggle() {
+    const next = Theme.get() === "dark" ? "light" : "dark";
+    localStorage.setItem(DB_THEME, next);
+    Theme.apply(next);
+    return next;
+  }
+};
+Theme.apply(Theme.get());
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {

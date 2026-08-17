@@ -15,10 +15,16 @@
 <body>
 <div class="wrap">
   <header class="app-header">
-    <h1 class="app-title">Stacks<span class="dot">.</span></h1>
+    <div class="header-top">
+      <h1 class="app-title">Stacks<span class="dot">.</span></h1>
+      <div class="header-actions">
+        <button class="header-icon-btn" id="statsBtn" title="Stats" aria-label="Stats">📊</button>
+        <button class="header-icon-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
     <div class="app-sub" id="subline">your queue, off the algorithm</div>
     <div class="search-row">
-      <input class="search-input" id="search" type="text" placeholder="Search saved titles or channels…" />
+      <input class="search-input" id="search" type="text" placeholder="Search saved titles, channels, notes…" />
     </div>
     <div class="chip-row" id="catChips"></div>
     <div class="chip-row" id="plChips"></div>
@@ -31,7 +37,10 @@
 
   <div class="count-line-row">
     <div class="count-line" id="countLine">0 saved</div>
-    <button class="text-btn" id="sortBtn">Newest ▾</button>
+    <div style="display:flex; gap:12px;">
+      <button class="text-btn" id="selectModeBtn">Select</button>
+      <button class="text-btn" id="sortBtn">Newest ▾</button>
+    </div>
   </div>
   <div class="list" id="list"></div>
 
@@ -44,6 +53,18 @@
 
 <button class="fab" id="fabAdd" aria-label="Add link">+</button>
 
+<div class="toast" id="undoToast">
+  <span class="msg" id="undoMsg"></span>
+  <button id="undoBtn">Undo</button>
+</div>
+
+<div class="bulk-bar" id="bulkBar">
+  <span class="bulk-count" id="bulkCount">0 selected</span>
+  <button class="btn ghost" id="bulkCategoryBtn">Category</button>
+  <button class="btn ghost" id="bulkPlaylistBtn">Playlist</button>
+  <button class="btn danger" id="bulkDeleteBtn">Delete</button>
+</div>
+
 <div class="sheet-backdrop" id="sheetBackdrop">
   <div class="sheet">
     <h3 id="sheetTitle">Add a link</h3>
@@ -54,6 +75,10 @@
     <div class="field">
       <label for="fTitleField">Title</label>
       <input type="text" id="fTitleField" placeholder="Fetched automatically, or type your own" />
+    </div>
+    <div class="field">
+      <label for="fNote">Note (optional)</label>
+      <textarea id="fNote" rows="2" placeholder="Skip to the demo part, watch before Friday…"></textarea>
     </div>
     <div class="field">
       <label>Category</label>
@@ -92,6 +117,29 @@
     </div>
     <div class="sheet-actions">
       <button class="btn primary" id="manageCloseBtn">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet-backdrop" id="bulkTagBackdrop">
+  <div class="sheet">
+    <h3 id="bulkTagTitle">Set category</h3>
+    <div class="field">
+      <div class="tag-picker" id="bulkTagPicker"></div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="bulkTagCancel">Cancel</button>
+      <button class="btn primary" id="bulkTagApply">Apply</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet-backdrop" id="statsBackdrop">
+  <div class="sheet">
+    <h3>Your stats</h3>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="sheet-actions">
+      <button class="btn primary" id="statsCloseBtn">Close</button>
     </div>
   </div>
 </div>

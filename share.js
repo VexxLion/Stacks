@@ -101,12 +101,14 @@ async function init() {
 
 $("#saveBtn") && ($("#saveBtn").onclick = () => {
   const title = $("#fTitleField").value.trim() || "Untitled video";
+  const note = $("#fNote").value.trim();
   const dupe = Store.findByVideoId(currentVideoId);
   if (dupe) {
     const mergedPlaylists = Array.from(new Set([...(dupe.playlists || []), ...pickedPlaylists]));
     Store.updateLink(dupe.id, {
       category: pickedCategory || dupe.category,
-      playlists: mergedPlaylists
+      playlists: mergedPlaylists,
+      note: note || dupe.note
     });
   } else {
     Store.addLink({
@@ -114,11 +116,14 @@ $("#saveBtn") && ($("#saveBtn").onclick = () => {
       url: currentUrl,
       videoId: currentVideoId,
       title,
+      note,
       channel: $("#pvChannel").textContent || "",
       thumbnail: YT.thumbUrl(currentVideoId),
       category: pickedCategory,
       playlists: Array.from(pickedPlaylists),
       watched: false,
+      watchedAt: null,
+      pinned: false,
       addedAt: new Date().toISOString()
     });
   }

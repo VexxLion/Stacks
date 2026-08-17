@@ -53,6 +53,26 @@ If Stacks doesn't show up in the share sheet right away, reboot once —
 Android sometimes needs a restart to pick up a newly installed PWA's share
 target registration.
 
+## Gestures & shortcuts
+
+- **Single tap** a card → opens the video.
+- **Double tap** a card → pins it to the top of the list (tap again to unpin).
+- **Swipe right** on a card → marks it watched.
+- **Swipe left** on a card → deletes it (a few seconds of **Undo** appear at
+  the bottom before it's gone for good — deleting from the edit sheet gives
+  the same Undo).
+- **Select** (next to the sort control) → turns on checkboxes so you can move
+  or delete several links at once.
+- Filter down to one **playlist chip** → drag handles (⠿) appear so you can
+  reorder that playlist by hand, e.g. to sequence a course.
+- **🗄 Archived** chip → watched videos quietly move here after 14 days so
+  the main list doesn't pile up; they're still fully searchable there.
+- **📊** in the header → quick counts (total saved, watched, saved this week,
+  top category).
+- **☾ / ☀** in the header → switches between dark and light.
+- Opening **+ Add a link** will offer to prefill the URL field if you've
+  already got a YouTube link copied to your clipboard.
+
 ## 4. Pairing with your ad-block browser
 
 Tapping a saved video in Stacks just opens its normal `youtube.com` URL.
